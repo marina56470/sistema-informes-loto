@@ -1,0 +1,42 @@
+<nav class="navbar">
+  <a href="/dashboard" class="nav-brand">
+    <!-- Logo: muestra imagen si existe, si no el círculo amarillo fallback -->
+    <div class="nav-logo-img-wrap">
+      <img src="/img/logo.png" alt="Logo" class="nav-logo-img"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+      <div class="nav-logo-circle" style="display:none;">Y</div>
+    </div>
+    <div class="nav-logo-text">
+      <span class="nav-logo-main">YAle</span>
+      <span class="nav-logo-sub">ASSA ABLOY</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/dashboard"  class="nav-link <%= title==='Inicio'    ? 'active':'' %>">Inicio</a>
+    <a href="/informes"   class="nav-link <%= title==='Mis Informes' ? 'active':'' %>">Informes</a>
+    <a href="/clientes"   class="nav-link <%= title==='Clientes'     ? 'active':'' %>">Clientes</a>
+    <a href="/productos"  class="nav-link <%= ['Catálogo Yale','Nuevo Producto','Editar Producto'].includes(title) ? 'active':'' %>">Catálogo</a>
+  </div>
+
+  <div class="nav-user">
+    <% if (user?.avatar_url) { %>
+      <img src="<%= user.avatar_url %>" alt="Avatar" class="nav-avatar">
+    <% } else { %>
+      <div class="nav-avatar-placeholder"><%= user?.nombre?.charAt(0).toUpperCase() || 'U' %></div>
+    <% } %>
+    <div class="nav-user-info">
+      <span class="nav-user-name"><%= user?.nombre || 'Usuario' %></span>
+      <span class="nav-user-zona"><%= user?.zona || user?.cargo || '' %></span>
+    </div>
+    <a href="/auth/logout" class="nav-logout" title="Cerrar sesión">⏻</a>
+  </div>
+</nav>
+
+<!-- FLASH MESSAGES -->
+<% if (flash?.success) { %>
+  <div class="flash flash-success"><%= flash.success %></div>
+<% } %>
+<% if (flash?.error) { %>
+  <div class="flash flash-error"><%= flash.error %></div>
+<% } %>

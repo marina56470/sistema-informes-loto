@@ -1,0 +1,55 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<main class="page-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><span class="title-dot"></span>Nuevo Informe</h1>
+      <p class="page-sub">Completa los datos generales del informe</p>
+    </div>
+    <a href="/informes" class="btn btn-outline">← Volver</a>
+  </div>
+
+  <div class="form-card">
+    <form action="/informes" method="POST">
+      <div class="form-section-title">📋 Cliente</div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Empresa cliente</label>
+          <select name="cliente_id" class="form-input" id="selectCliente">
+            <option value="">— Sin cliente aún —</option>
+            <% clientes.forEach(c => { %>
+              <option value="<%= c.id %>"><%= c.empresa %> <%= c.ciudad ? '('+c.ciudad+')' : '' %></option>
+            <% }) %>
+          </select>
+          <small style="color:var(--text-faint);font-size:0.72rem;margin-top:3px;display:block;">
+            ¿No está? <a href="/clientes/nuevo" target="_blank">Crear cliente nuevo</a>
+          </small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha del Informe</label>
+          <input type="date" name="fecha_informe" class="form-input"
+                 value="<%= new Date().toISOString().split('T')[0] %>" required>
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Fecha de Visita Técnica</label>
+          <input type="date" name="fecha_visita" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas Comerciales (opcional)</label>
+        <textarea name="notas_comerciales" class="form-input" rows="3"
+                  placeholder="Distribuidor, condiciones, observaciones generales..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="/informes" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Crear y agregar puntos de bloqueo →</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

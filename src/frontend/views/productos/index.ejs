@@ -1,0 +1,201 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<main class="page-content">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><span class="title-dot"></span>Catálogo Yale LOTO</h1>
+      <p class="page-sub">
+        <span class="badge"><%= counts.activos %> activos</span>
+        <span style="margin:0 .3rem;color:var(--text-f)">·</span>
+        <span style="font-size:.78rem;color:var(--text-m);"><%= counts.inactivos %> inactivos · <%= counts.total %> total</span>
+      </p>
+    </div>
+    <a href="/productos/nuevo" class="btn btn-primary">＋ Nuevo producto</a>
+  </div>
+
+  <!-- Filtros -->
+  <form method="GET" action="/productos" class="filter-bar" style="margin-bottom:1.5rem;flex-wrap:wrap;">
+    <input type="text" name="q" value="<%= filtros.q || '' %>"
+           placeholder="Buscar nombre, SKU o descripción..." class="form-input filter-input">
+    <select name="cat" class="form-input filter-select">
+      <option value="">Todas las categorías</option>
+      <% categorias.forEach(c => { %>
+        <option value="<%= c %>" <%= filtros.cat === c ? 'selected' : '' %>><%= c %></option>
+      <% }) %>
+    </select>
+    <select name="mostrar" class="form-input" style="max-width:160px;">
+      <option value="activos"   <%= filtros.mostrar === 'activos'   ? 'selected' : '' %>>Solo activos</option>
+      <option value="inactivos" <%= filtros.mostrar === 'inactivos' ? 'selected' : '' %>>Solo inactivos</option>
+      <option value="todos"     <%= filtros.mostrar === 'todos'     ? 'selected' : '' %>>Todos</option>
+    </select>
+    <button type="submit" class="btn btn-outline">Filtrar</button>
+    <a href="/productos" class="btn btn-ghost">Limpiar</a>
+  </form>
+
+  <!-- Grid -->
+  <% if (!productos.length) { %>
+    <div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <p>No se encontraron productos.<br>
+        <% if (filtros.q || filtros.cat) { %>
+          <a href="/productos">Ver todos</a> o
+        <% } %>
+        <a href="/productos/nuevo">Crea el primero</a>.
+      </p>
+    </div>
+  <% } else { %>
+    <div class="productos-grid">
+      <% productos.forEach(p => { %>
+        <div class="producto-card <%= !p.activo ? 'producto-inactivo' : '' %>">
+
+          <!-- Foto -->
+          <div class="pc-foto-wrap">
+            <% if (!p.activo) { %>
+              <div class="pc-inactivo-badge">Inactivo</div>
+            <% } %>
+            <% if (p.foto_url) { %>
+              <img src="<%= p.foto_url %>" alt="<%= p.nombre %>" class="pc-foto">
+            <% } else { %>
+              <div class="pc-foto-empty">
+                <span>📦</span>
+                <small>Sin foto</small>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Info -->
+          <div class="pc-body">
+            <div class="pc-meta">
+              <span class="pc-sku">SKU <%= p.sku %></span>
+              <span class="pc-cat-badge"><%= p.categoria %></span>
+            </div>
+            <div class="pc-nombre"><%= p.nombre %></div>
+            <% if (p.descripcion) { %>
+              <div class="pc-desc"><%= p.descripcion.substring(0, 80) %><%= p.descripcion.length > 80 ? '…' : '' %></div>
+            <% } %>
+            <% if (p.energia) { %>
+              <span class="pc-energia">⚡ <%= p.energia %></span>
+            <% } %>
+          </div>
+
+          <!-- Acciones -->
+          <div class="pc-footer">
+
+            <!-- Subir/cambiar foto rápido -->
+            <form action="/productos/<%= p.id %>/foto" method="POST" enctype="multipart/form-data" class="pc-foto-form">
+              <label class="btn btn-sm btn-ghost pc-foto-btn" title="<%= p.foto_url ? 'Cambiar foto' : 'Subir foto' %>">
+                📷
+                <input type="file" name="foto" accept="image/*" onchange="this.closest('form').submit()" style="display:none">
+              </label>
+            </form>
+
+            <a href="/productos/<%= p.id %>/editar" class="btn btn-sm btn-outline" title="Editar">✏️</a>
+
+            <!-- Toggle activo/inactivo -->
+            <form action="/productos/<%= p.id %>/toggle" method="POST" id="toggle-<%= p.id %>">
+              <button type="button" class="btn btn-sm <%= p.activo ? 'btn-outline' : 'btn-primary' %>"
+                title="<%= p.activo ? 'Desactivar' : 'Activar' %>"
+                data-modal-confirm
+                data-modal-title="<%= p.activo ? '¿Desactivar producto?' : '¿Activar producto?' %>"
+                data-modal-body="<%= p.activo ? 'El producto no aparecerá en el selector de informes pero no se eliminará.' : 'El producto volverá a aparecer en el catálogo.' %>"
+                data-modal-confirm="<%= p.activo ? 'Sí, desactivar' : 'Sí, activar' %>"
+                data-modal-class="<%= p.activo ? 'modal-btn-danger' : 'modal-btn-primary' %>"
+                data-modal-icon="<%= p.activo ? 'warning' : 'check' %>"
+                data-form-target="#toggle-<%= p.id %>">
+                <%= p.activo ? '⏸' : '▶' %>
+              </button>
+            </form>
+
+            <!-- Eliminar -->
+            <form action="/productos/<%= p.id %>/delete" method="POST" id="del-prod-<%= p.id %>">
+              <button type="button" class="btn btn-sm btn-danger"
+                title="Eliminar"
+                data-modal-confirm
+                data-modal-title="¿Eliminar producto?"
+                data-modal-body="Se eliminará '<%= p.nombre %>'. Si está en uso en algún informe, no se podrá eliminar."
+                data-modal-confirm="Sí, eliminar"
+                data-modal-class="modal-btn-danger"
+                data-modal-icon="trash"
+                data-form-target="#del-prod-<%= p.id %>">🗑</button>
+            </form>
+
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+</main>
+
+<style>
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.producto-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow .2s, border-color .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.producto-card:hover { border-color: var(--yellow); box-shadow: 0 4px 14px rgba(0,0,0,.09); }
+.producto-inactivo { opacity: .55; }
+.producto-inactivo:hover { opacity: .85; }
+
+.pc-foto-wrap {
+  height: 140px;
+  background: var(--gray-50);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.pc-foto {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain; padding: 10px;
+}
+.pc-foto-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: var(--gray-300);
+}
+.pc-foto-empty span  { font-size: 2.2rem; opacity: .4; }
+.pc-foto-empty small { font-size: .65rem; }
+.pc-inactivo-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: var(--gray-700); color: #fff;
+  font-size: .6rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+
+.pc-body { padding: 11px 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.pc-meta { display: flex; align-items: center; justify-content: space-between; gap: .3rem; margin-bottom: 2px; }
+.pc-sku  { font-family:'DM Mono',monospace; font-size:.62rem; color:var(--yellow-d); font-weight:700; }
+.pc-cat-badge {
+  font-size: .58rem; font-weight: 700; color: var(--gray-700);
+  background: var(--gray-100); padding: 2px 7px; border-radius: 20px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;
+}
+.pc-nombre { font-size:.78rem; font-weight:700; color:var(--text); line-height:1.3; }
+.pc-desc   { font-size:.7rem; color:var(--text-f); line-height:1.4; }
+.pc-energia{ font-size:.65rem; color:var(--text-m); margin-top:2px; }
+
+.pc-footer {
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex; gap: .35rem; align-items: center;
+}
+.pc-foto-form { display:contents; }
+.pc-foto-btn  { cursor:pointer; }
+</style>
+
+<%- include('../partials/footer') %>

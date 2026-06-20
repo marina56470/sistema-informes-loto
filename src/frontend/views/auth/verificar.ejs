@@ -1,0 +1,16 @@
+<%- include('../partials/head') %>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo-circle" style="font-size:1.8rem;"><%= exito ? '✅' : '❌' %></div>
+      <h1 class="auth-title"><%= exito ? '¡Cuenta verificada!' : 'Enlace inválido' %></h1>
+    </div>
+    <p style="text-align:center;color:#555;margin-bottom:1.5rem;"><%= mensaje %></p>
+    <% if (exito) { %>
+      <a href="/auth/login" class="btn btn-primary btn-block">Iniciar Sesión →</a>
+    <% } else { %>
+      <a href="/auth/register" class="btn btn-outline btn-block">Volver al registro</a>
+    <% } %>
+  </div>
+</div>
+</body></html>

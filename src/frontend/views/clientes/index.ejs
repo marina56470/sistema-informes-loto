@@ -1,0 +1,54 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<main class="page-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><span class="title-dot"></span>Clientes</h1>
+      <p class="page-sub"><%= clientes.length %> empresa<%= clientes.length !== 1 ? 's' : '' %> registrada<%= clientes.length !== 1 ? 's' : '' %></p>
+    </div>
+    <a href="/clientes/nuevo" class="btn btn-primary">+ Nuevo Cliente</a>
+  </div>
+
+  <% if (!clientes.length) { %>
+    <div class="empty-state">
+      <div class="empty-icon">🏭</div>
+      <p>Aún no tienes clientes. <a href="/clientes/nuevo">Agrega el primero</a>.</p>
+    </div>
+  <% } else { %>
+    <div class="tabla-wrap">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Ciudad</th>
+            <th>Contacto</th>
+            <th>NIT</th>
+            <th>Informes</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% clientes.forEach(c => { %>
+            <tr>
+              <td><strong><%= c.empresa %></strong></td>
+              <td><%= c.ciudad || '—' %></td>
+              <td><%= c.contacto || '—' %><% if (c.cargo_contacto) { %><br><small style="color:var(--text-faint)"><%= c.cargo_contacto %></small><% } %></td>
+              <td><code><%= c.nit || '—' %></code></td>
+              <td><span class="badge"><%= c.total_informes %></span></td>
+              <td style="display:flex;gap:.4rem;">
+                <a href="/clientes/<%= c.id %>/editar" class="btn btn-sm btn-outline">✏️</a>
+                <form action="/clientes/<%= c.id %>/delete" method="POST"
+                      onsubmit="return confirm('¿Eliminar cliente <%= c.empresa %>?')">
+                  <button type="submit" class="btn btn-sm btn-danger">🗑</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</main>
+
+<%- include('../partials/footer') %>

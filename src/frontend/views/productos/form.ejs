@@ -1,0 +1,285 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<main class="page-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><span class="title-dot"></span><%= title %></h1>
+      <p class="page-sub"><%= producto ? 'Modifica los datos del producto del catálogo' : 'Agrega un nuevo dispositivo Yale al catálogo' %></p>
+    </div>
+    <a href="/productos" class="btn btn-outline">← Volver al catálogo</a>
+  </div>
+
+  <div class="pf-layout">
+
+    <!-- ── FORMULARIO ── -->
+    <div class="form-card" style="flex:1;">
+      <form action="<%= accion %>" method="POST" enctype="multipart/form-data">
+
+        <div class="form-section-title">🏷 Identificación</div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">SKU *</label>
+            <input type="text" name="sku" class="form-input"
+                   value="<%= producto?.sku || '' %>"
+                   placeholder="Ej: 0001162" required
+                   <%= producto ? '' : '' %>>
+            <small class="form-hint">Código único del fabricante. No puede repetirse.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categoría *</label>
+            <select name="categoria" class="form-input" required>
+              <option value="">— Selecciona —</option>
+              <% CATEGORIAS.forEach(c => { %>
+                <option value="<%= c %>" <%= producto?.categoria === c ? 'selected' : '' %>><%= c %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre del producto *</label>
+          <input type="text" name="nombre" class="form-input"
+                 value="<%= producto?.nombre || '' %>"
+                 placeholder="Ej: Candado Gancho Nylon Rojo 38mm" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción técnica</label>
+          <textarea name="descripcion" class="form-input" rows="4"
+                    placeholder="Características técnicas, materiales, temperaturas, dimensiones, compatibilidad..."><%= producto?.descripcion || '' %></textarea>
+        </div>
+
+        <div class="form-section-title" style="margin-top:1rem;">⚡ Clasificación</div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Tipo de Energía</label>
+            <select name="energia" class="form-input">
+              <option value="">— Selecciona —</option>
+              <% ENERGIAS.forEach(e => { %>
+                <option value="<%= e %>" <%= producto?.energia === e ? 'selected' : '' %>><%= e %></option>
+              <% }) %>
+            </select>
+          </div>
+          <% if (producto) { %>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <div class="toggle-wrap">
+              <label class="toggle-label">
+                <input type="checkbox" name="activo" value="on"
+                       <%= producto?.activo ? 'checked' : '' %>
+                       onchange="document.getElementById('estado-texto').textContent = this.checked ? 'Activo' : 'Inactivo'">
+                <span class="toggle-slider"></span>
+              </label>
+              <span id="estado-texto" class="toggle-text"><%= producto?.activo ? 'Activo' : 'Inactivo' %></span>
+            </div>
+            <small class="form-hint">Inactivo = no aparece en el selector del informe</small>
+          </div>
+          <% } %>
+        </div>
+
+        <div class="form-section-title" style="margin-top:1rem;">📷 Foto del producto</div>
+        <div class="form-group">
+          <div class="photo-zone" onclick="document.getElementById('fotoInput').click()" id="fotoZone">
+            <input type="file" id="fotoInput" name="foto" accept="image/*" onchange="previewFoto(this)">
+            <% if (producto?.foto_url) { %>
+              <img id="fotoPreview" src="<%= producto.foto_url %>" class="photo-preview-thumb" style="display:block;max-height:140px;">
+              <div id="fotoZoneText" style="display:none;">📷 Clic para cambiar la foto</div>
+            <% } else { %>
+              <img id="fotoPreview" class="photo-preview-thumb" style="display:none;">
+              <div id="fotoZoneText">📷 Clic para subir foto del producto</div>
+            <% } %>
+          </div>
+          <% if (producto?.foto_url) { %>
+            <!-- Sin <form> propio (no se puede anidar dentro del form principal).
+                 El borrado se maneja 100% por JS con fetch() más abajo. -->
+            <button type="button" class="btn btn-sm btn-danger" style="margin-top:.5rem;"
+              id="btn-quitar-foto"
+              data-producto-id="<%= producto.id %>">✕ Quitar foto actual</button>
+          <% } %>
+        </div>
+
+        <div class="form-actions">
+          <a href="/productos" class="btn btn-outline">Cancelar</a>
+          <button type="submit" class="btn btn-primary">
+            <%= producto ? '💾 Guardar cambios' : '＋ Crear producto' %>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- ── PREVIEW CARD ── -->
+    <div class="pf-preview">
+      <div class="pf-preview-title">Vista previa en informe</div>
+      <div class="rt-product-block" id="preview-block" style="background:#FFFBE6;border-left:3px solid #F5C800;border-radius:3px;padding:8px;display:flex;align-items:center;gap:7px;">
+        <div id="prev-foto-wrap" style="flex-shrink:0;<%= producto?.foto_url ? '' : 'display:none' %>">
+          <img id="prev-foto" src="<%= producto?.foto_url || '' %>"
+               style="width:42px;height:42px;max-width:42px;max-height:42px;object-fit:contain;display:block;border:1px solid #eee;border-radius:4px;padding:2px;background:#fff;">
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:monospace;font-weight:700;color:#1A1A1A;font-size:11px;" id="prev-sku">SKU <%= producto?.sku || '—' %></div>
+          <div style="font-weight:700;font-size:12px;margin-top:2px;line-height:1.25;" id="prev-nombre"><%= producto?.nombre || 'Nombre del producto' %></div>
+        </div>
+      </div>
+
+      <div class="pf-preview-tips">
+        <div class="pf-tip">
+          <span class="pf-tip-icon">💡</span>
+          <span>Solo el SKU y nombre aparecen en el informe — la descripción técnica queda guardada en el catálogo pero no se imprime, para mantener la tabla compacta.</span>
+        </div>
+        <div class="pf-tip">
+          <span class="pf-tip-icon">📐</span>
+          <span>Usa imágenes con fondo blanco o transparente para mejor resultado al imprimir.</span>
+        </div>
+        <div class="pf-tip">
+          <span class="pf-tip-icon">🔍</span>
+          <span>El SKU debe coincidir exactamente con el código del catálogo oficial Yale.</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pf-layout -->
+</main>
+
+<script>
+// Preview en tiempo real
+document.querySelector('[name=sku]').addEventListener('input', e => {
+  document.getElementById('prev-sku').textContent = 'SKU ' + (e.target.value || '—');
+});
+document.querySelector('[name=nombre]').addEventListener('input', e => {
+  document.getElementById('prev-nombre').textContent = e.target.value || 'Nombre del producto';
+});
+
+function previewFoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const src = e.target.result;
+    // Preview en zona de upload
+    document.getElementById('fotoPreview').src = src;
+    document.getElementById('fotoPreview').style.display = 'block';
+    document.getElementById('fotoZoneText').style.display = 'none';
+    // Preview en tarjeta
+    document.getElementById('prev-foto').src = src;
+    document.getElementById('prev-foto-wrap').style.display = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Quitar foto: maneja su propio modal + fetch (NO usa data-modal-confirm
+//    porque ese sistema espera un <form> ancestro, y este botón no tiene uno) ──
+const btnQuitarFoto = document.getElementById('btn-quitar-foto');
+if (btnQuitarFoto) {
+  btnQuitarFoto.addEventListener('click', async () => {
+    const ok = await window.Modal.show({
+      title:        '¿Quitar la foto?',
+      body:         'La foto del producto será eliminada del catálogo.',
+      confirmText:  'Sí, quitar',
+      confirmClass: 'modal-btn-danger',
+      icon:         'trash',
+    });
+    if (!ok) return;
+
+    const id = btnQuitarFoto.dataset.productoId;
+    btnQuitarFoto.disabled = true;
+    btnQuitarFoto.textContent = 'Quitando...';
+
+    try {
+      const res = await fetch(`/productos/${id}/foto/delete`, { method: 'POST' });
+      if (res.ok || res.redirected) {
+        window.Toast.show('Foto eliminada correctamente.', 'success');
+        // Actualizar la UI sin recargar
+        document.getElementById('fotoPreview').style.display = 'none';
+        document.getElementById('fotoZoneText').style.display = '';
+        document.getElementById('fotoZoneText').textContent = '📷 Clic para subir foto del producto';
+        document.getElementById('prev-foto-wrap').style.display = 'none';
+        btnQuitarFoto.remove();
+      } else {
+        throw new Error('No se pudo eliminar la foto.');
+      }
+    } catch (err) {
+      window.Toast.show(err.message, 'error');
+      btnQuitarFoto.disabled = false;
+      btnQuitarFoto.textContent = '✕ Quitar foto actual';
+    }
+  });
+}
+</script>
+
+<style>
+.pf-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+.pf-preview {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+}
+.pf-preview-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: .75rem;
+  padding-bottom: .5rem;
+  border-bottom: 2.5px solid var(--yellow);
+}
+.pf-preview-tips {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+.pf-tip {
+  display: flex;
+  gap: .5rem;
+  font-size: .72rem;
+  color: var(--text-m);
+  line-height: 1.5;
+}
+.pf-tip-icon { flex-shrink: 0; }
+.form-hint {
+  font-size: .68rem;
+  color: var(--text-f);
+  margin-top: .25rem;
+  display: block;
+}
+
+/* Toggle switch */
+.toggle-wrap  { display: flex; align-items: center; gap: .6rem; margin-top: .3rem; }
+.toggle-label { position: relative; width: 44px; height: 24px; cursor: pointer; }
+.toggle-label input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--gray-200);
+  border-radius: 24px;
+  transition: background .2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.15);
+}
+.toggle-label input:checked + .toggle-slider { background: var(--black); }
+.toggle-label input:checked + .toggle-slider::before { transform: translateX(20px); }
+.toggle-text { font-size: .82rem; font-weight: 600; color: var(--text); }
+
+@media (max-width: 900px) {
+  .pf-layout { flex-direction: column; }
+  .pf-preview { width: 100%; position: static; }
+}
+</style>
+
+<%- include('../partials/footer') %>

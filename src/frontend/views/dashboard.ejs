@@ -1,0 +1,79 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<main class="page-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><span class="title-dot"></span>Inicio</h1>
+      <p class="page-sub">Bienvenido, <strong><%= user.nombre %></strong> — <%= user.zona || user.cargo || '' %></p>
+    </div>
+    <a href="/informes/nuevo" class="btn btn-primary">+ Nuevo Informe</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon"></div>
+      <div class="stat-info">
+        <div class="stat-number"><%= stats.total || 0 %></div>
+        <div class="stat-label">Total Informes</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"></div>
+      <div class="stat-info">
+        <div class="stat-number"><%= stats.borradores || 0 %></div>
+        <div class="stat-label">En Borrador</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"></div>
+      <div class="stat-info">
+        <div class="stat-number"><%= stats.finalizados || 0 %></div>
+        <div class="stat-label">Finalizados</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"></div>
+      <div class="stat-info">
+        <div class="stat-number"><%= stats.enviados || 0 %></div>
+        <div class="stat-label">Enviados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Últimos informes -->
+  <div class="section-header">
+    <h2 class="section-title">Últimos Informes</h2>
+    <a href="/informes" class="link-ver-todos">Ver todos →</a>
+  </div>
+
+  <% if (!informes.length) { %>
+    <div class="empty-state">
+      <div class="empty-icon"></div>
+      <p>Aún no tienes informes. <a href="/informes/nuevo">Crea el primero</a>.</p>
+    </div>
+  <% } else { %>
+    <div class="informes-grid">
+      <% informes.forEach(inf => { %>
+        <div class="informe-card">
+          <div class="ic-header">
+            <span class="ic-estado ic-estado-<%= inf.estado %>"><%= inf.estado %></span>
+            <span class="ic-fecha"><%= new Date(inf.fecha_informe).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %></span>
+          </div>
+          <div class="ic-body">
+            <div class="ic-empresa"><%= inf.empresa || '— Sin cliente —' %></div>
+            <div class="ic-ciudad"><%= inf.ciudad || '' %></div>
+            <div class="ic-hallazgos"><%= inf.total_hallazgos %> punto<%= inf.total_hallazgos != 1 ? 's' : '' %> de bloqueo</div>
+          </div>
+          <div class="ic-footer">
+            <a href="/informes/<%= inf.id %>/editar"  class="btn btn-sm btn-outline">✏️ Editar</a>
+            <a href="/informes/<%= inf.id %>/preview" class="btn btn-sm btn-primary">👁 Ver</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</main>
+
+<%- include('partials/footer') %>

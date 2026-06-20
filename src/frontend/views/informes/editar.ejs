@@ -1,0 +1,231 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<% const ENERGIAS = ['Eléctrica','Mecánica','Neumática','Hidráulica','Térmica','Química']; %>
+<% const ENERGY_CLASS = { 'Eléctrica':'elec','Mecánica':'mec','Neumática':'neu','Hidráulica':'hid','Térmica':'ter','Química':'qui' }; %>
+
+<main class="page-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><span class="title-dot"></span>Editar Informe</h1>
+      <p class="page-sub"><%= informe.empresa || 'Sin cliente asignado' %> <%= informe.ciudad ? '— '+informe.ciudad : '' %></p>
+    </div>
+    <div style="display:flex;gap:.5rem;">
+      <a href="/informes/<%= informe.id %>/preview" class="btn btn-outline">👁 Preview</a>
+      <a href="/informes" class="btn btn-ghost">← Volver</a>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+
+    <!-- ── SIDEBAR: datos generales + nuevo hallazgo ── -->
+    <aside class="editor-sidebar">
+
+      <!-- Datos del informe -->
+      <div class="editor-section">
+        <div class="editor-section-title">📋 Datos del Informe</div>
+        <form action="/informes/<%= informe.id %>" method="POST">
+          <div class="form-group">
+            <label class="form-label">Cliente</label>
+            <select name="cliente_id" class="form-input">
+              <option value="">— Sin cliente —</option>
+              <% clientes.forEach(c => { %>
+                <option value="<%= c.id %>" <%= informe.cliente_id == c.id ? 'selected' : '' %>>
+                  <%= c.empresa %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha Informe</label>
+            <input type="date" name="fecha_informe" class="form-input"
+                   value="<%= informe.fecha_informe?.toISOString?.()?.split('T')[0] || informe.fecha_informe %>">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha Visita</label>
+            <input type="date" name="fecha_visita" class="form-input"
+                   value="<%= informe.fecha_visita?.toISOString?.()?.split('T')[0] || informe.fecha_visita || '' %>">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select name="estado" class="form-input">
+              <option value="borrador"   <%= informe.estado==='borrador'   ? 'selected':'' %>>Borrador</option>
+              <option value="finalizado" <%= informe.estado==='finalizado' ? 'selected':'' %>>Finalizado</option>
+              <option value="enviado"    <%= informe.estado==='enviado'    ? 'selected':'' %>>Enviado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notas Comerciales</label>
+            <textarea name="notas_comerciales" class="form-input" rows="2"><%= informe.notas_comerciales || '' %></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">💾 Guardar Datos</button>
+        </form>
+      </div>
+
+      <!-- Nuevo hallazgo -->
+      <div class="editor-section">
+        <div class="editor-section-title">⚡ Agregar Punto de Bloqueo</div>
+        <form action="/informes/<%= informe.id %>/hallazgos" method="POST" enctype="multipart/form-data">
+
+          <div class="form-group">
+            <label class="form-label">Proceso</label>
+            <input type="text" name="proceso" class="form-input" placeholder="Ej: Planta de Producción">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Área *</label>
+            <input type="text" name="area" class="form-input" placeholder="Ej: Subestación Eléctrica" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción / Hallazgos *</label>
+            <textarea name="descripcion" class="form-input" rows="3"
+                      placeholder="Describe el equipo, interruptor, válvula..." required></textarea>
+          </div>
+
+          <!-- Energías -->
+          <div class="form-group">
+            <label class="form-label">Energías Peligrosas</label>
+            <div class="energy-badges">
+              <% ENERGIAS.forEach(e => { %>
+                <label class="energy-badge <%= ENERGY_CLASS[e] %>">
+                  <input type="checkbox" name="energias" value="<%= e %>" style="display:none"
+                         onchange="this.closest('label').classList.toggle('active',this.checked)">
+                  <%= e === 'Eléctrica' ? '⚡' : e === 'Mecánica' ? '⚙' : e === 'Neumática' ? '💨' : e === 'Hidráulica' ? '💧' : e === 'Térmica' ? '🔥' : '⚗' %> <%= e %>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- Productos -->
+          <div class="form-group">
+            <label class="form-label">Dispositivos Yale (catálogo)</label>
+            <input type="text" id="buscarProducto" class="form-input" placeholder="🔍 Buscar SKU o nombre...">
+            <div class="catalogo-lista" id="catalogoLista">
+              <% productos.forEach(p => { %>
+                <label class="catalogo-item" data-nombre="<%= p.nombre.toLowerCase() %>" data-sku="<%= p.sku %>">
+                  <input type="checkbox" name="productos" value="<%= p.id %>" style="display:none"
+                         onchange="this.closest('label').classList.toggle('selected',this.checked)">
+                  <div class="ci-info">
+                    <div class="ci-nombre"><%= p.nombre %></div>
+                    <div class="ci-sku">SKU <%= p.sku %> — <%= p.categoria %></div>
+                  </div>
+                  <span class="ci-check">＋</span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- Recomendaciones -->
+          <div class="form-group">
+            <label class="form-label">Recomendaciones Adicionales</label>
+            <textarea name="recomendaciones" class="form-input" rows="2"
+                      placeholder="Norma RETIE, código de colores, trazabilidad..."></textarea>
+          </div>
+
+          <!-- Foto -->
+          <div class="form-group">
+            <label class="form-label">Foto del punto de bloqueo</label>
+            <div class="photo-zone" onclick="document.getElementById('fotoInput').click()">
+              <input type="file" id="fotoInput" name="foto" accept="image/*" onchange="previewFoto(this)">
+              <div class="photo-zone-text" id="fotoZoneText">📷 Clic para cargar imagen</div>
+              <img id="fotoPreview" class="photo-preview-thumb" style="display:none">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">＋ Agregar Punto</button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- ── MAIN: lista de hallazgos ── -->
+    <section class="editor-main">
+      <div class="hallazgos-header">
+        <span class="hallazgos-count"><%= hallazgos.length %> punto<%= hallazgos.length !== 1 ? 's' : '' %> de bloqueo</span>
+      </div>
+
+      <% if (!hallazgos.length) { %>
+        <div class="empty-state">
+          <div class="empty-icon">🔒</div>
+          <p>Agrega el primer punto de bloqueo usando el formulario lateral.</p>
+        </div>
+      <% } else { %>
+        <div class="hallazgos-lista" id="hallazgosLista">
+          <% hallazgos.forEach((h, i) => { %>
+            <div class="hallazgo-card" data-id="<%= h.id %>">
+              <div class="hc-header">
+                <div>
+                  <div class="hc-num">PUNTO #<%= i+1 %></div>
+                  <div class="hc-area"><%= h.area %></div>
+                  <div class="hc-proceso"><%= h.proceso || '' %></div>
+                </div>
+                <div class="hc-energias">
+                  <% (typeof h.energias === 'string' ? JSON.parse(h.energias) : h.energias).forEach(e => { %>
+                    <span class="fc-energy-pill pill-<%= ENERGY_CLASS[e] || 'elec' %>"><%= e %></span>
+                  <% }) %>
+                </div>
+              </div>
+
+              <% if (h.foto_path) { %>
+                <div class="hc-foto">
+                  <img src="<%= h.foto_path %>" alt="Foto punto">
+                </div>
+              <% } %>
+
+              <div class="hc-body">
+                <div class="hc-campo"><strong>Hallazgos:</strong> <%= h.descripcion %></div>
+                <% if (h.recomendaciones) { %>
+                  <div class="hc-campo"><strong>Recomendaciones:</strong> <%= h.recomendaciones %></div>
+                <% } %>
+
+                <% const prods = typeof h.productos === 'string' ? JSON.parse(h.productos) : h.productos; %>
+                <% if (prods?.length) { %>
+                  <div class="hc-productos">
+                    <% prods.forEach(p => { %>
+                      <div class="hc-producto">
+                        <span class="hcp-sku">SKU <%= p.sku %></span>
+                        <span class="hcp-nombre"><%= p.nombre %></span>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
+              </div>
+
+              <div class="hc-footer">
+                <form action="/informes/<%= informe.id %>/hallazgos/<%= h.id %>/delete" method="POST"
+                      onsubmit="return confirm('¿Eliminar este punto de bloqueo?')">
+                  <button type="submit" class="btn btn-sm btn-danger">🗑 Eliminar</button>
+                </form>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+  </div><!-- /editor-layout -->
+</main>
+
+<script>
+// Filtro de catálogo
+document.getElementById('buscarProducto').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.catalogo-item').forEach(item => {
+    const match = item.dataset.nombre.includes(q) || item.dataset.sku.includes(q);
+    item.style.display = match ? '' : 'none';
+  });
+});
+
+// Preview de foto
+function previewFoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('fotoPreview').src = e.target.result;
+    document.getElementById('fotoPreview').style.display = 'block';
+    document.getElementById('fotoZoneText').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+
+<%- include('../partials/footer') %>
