@@ -40,7 +40,7 @@ exports.dashboard = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.render('dashboard', { title: 'Dashboard', informes: [], stats: {} });
+    res.render('dashboard', { title: 'Inicio', informes: [], stats: {} });
   }
 };
 

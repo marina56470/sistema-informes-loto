@@ -13,7 +13,7 @@
   </a>
 
   <div class="nav-links" id="navLinks">
-    <a href="/dashboard"  class="nav-link <%= title==='Dashboard'    ? 'active':'' %>">Dashboard</a>
+    <a href="/dashboard"  class="nav-link <%= title==='Inicio'    ? 'active':'' %>">Inicio</a>
     <a href="/informes"   class="nav-link <%= title==='Mis Informes' ? 'active':'' %>">Informes</a>
     <a href="/clientes"   class="nav-link <%= title==='Clientes'     ? 'active':'' %>">Clientes</a>
     <a href="/productos"  class="nav-link <%= ['Catálogo Yale','Nuevo Producto','Editar Producto'].includes(title) ? 'active':'' %>">Catálogo</a>
@@ -66,33 +66,54 @@
 <% } %>
 
 <script>
-  // Menú hamburguesa: abrir/cerrar
-  (function() {
-    const burger  = document.getElementById('navBurger');
-    const links   = document.getElementById('navLinks');
+  // Menú hamburguesa: usamos delegación de eventos en document en vez de
+  // bindear directo a los elementos. Esto evita fallos si el script corre
+  // antes de que el navegador termine de pintar el DOM (común en móviles
+  // con conexión lenta), y también evita problemas si nav.ejs se reinserta
+  // dinámicamente en algún momento.
+  document.addEventListener('click', function(e) {
+    const burger = document.getElementById('navBurger');
+    const links  = document.getElementById('navLinks');
     const overlay = document.getElementById('navOverlay');
-    if (!burger) return;
+    if (!burger || !links || !overlay) return;
 
-    function closeMenu() {
+    // Clic en el botón hamburguesa (o en cualquiera de sus <span> internos)
+    if (e.target.closest('#navBurger')) {
+      e.preventDefault();
+      const isOpen = links.classList.contains('nav-links-open');
+      if (isOpen) {
+        links.classList.remove('nav-links-open');
+        overlay.classList.remove('nav-overlay-open');
+        burger.classList.remove('nav-burger-open');
+        burger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      } else {
+        links.classList.add('nav-links-open');
+        overlay.classList.add('nav-overlay-open');
+        burger.classList.add('nav-burger-open');
+        burger.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+      return;
+    }
+
+    // Clic en el fondo oscuro → cerrar
+    if (e.target.id === 'navOverlay') {
+      links.classList.remove('nav-links-open');
+      overlay.classList.remove('nav-overlay-open');
+      burger.classList.remove('nav-burger-open');
+      burger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      return;
+    }
+
+    // Clic en un link del menú → cerrar el menú para navegar
+    if (e.target.closest('#navLinks a')) {
       links.classList.remove('nav-links-open');
       overlay.classList.remove('nav-overlay-open');
       burger.classList.remove('nav-burger-open');
       burger.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
     }
-    function openMenu() {
-      links.classList.add('nav-links-open');
-      overlay.classList.add('nav-overlay-open');
-      burger.classList.add('nav-burger-open');
-      burger.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-    }
-
-    burger.addEventListener('click', () => {
-      links.classList.contains('nav-links-open') ? closeMenu() : openMenu();
-    });
-    overlay.addEventListener('click', closeMenu);
-    // Cerrar al hacer clic en un link
-    links.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
-  })();
+  });
 </script>
