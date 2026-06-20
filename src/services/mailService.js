@@ -48,7 +48,7 @@ function buildReportHTML(informe, hallazgos) {
 
     const prodsHTML = prods.map(p => `
       <div style="margin-bottom:5px;padding:5px 7px;background:#FFFBE6;border-left:3px solid #F5C800;border-radius:3px;display:flex;align-items:center;gap:7px;">
-        ${p.foto_url ? `<img src="${process.env.APP_URL}${p.foto_url}" style="width:60px;height:60px;max-width:60px;max-height:60px;object-fit:contain;flex-shrink:0;border:1px solid #eee;border-radius:4px;padding:2px;background:#fff;">` : ''}
+        ${p.foto_url ? `<img src="${process.env.APP_URL}${p.foto_url}" style="width:42px;height:42px;max-width:42px;max-height:42px;object-fit:contain;flex-shrink:0;border:1px solid #eee;border-radius:4px;padding:2px;background:#fff;">` : ''}
         <div style="flex:1;min-width:0;">
           <div style="font-family:monospace;font-weight:700;color:#1A1A1A;font-size:10px;">SKU ${p.sku}</div>
           <div style="font-weight:700;font-size:11px;margin-top:1px;line-height:1.25;">${p.nombre}</div>
@@ -227,6 +227,14 @@ async function generarPDF(informe, hallazgos) {
     format: 'A4',
     margin: { top: '10mm', bottom: '10mm', left: '8mm', right: '8mm' },
     printBackground: true,
+    // Flags necesarios para que Puppeteer/Chrome corra dentro de contenedores
+    // como los de Render, que no dan permisos de sandbox a root.
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+    ],
   };
   const buffer = await htmlPdf.generatePdf(file, opts);
   return buffer;

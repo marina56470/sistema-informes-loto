@@ -18,6 +18,12 @@ const productosRoutes = require('./routes/productosRoutes');
 
 const app = express();
 
+// Render (y la mayoría de PaaS) ponen tu app detrás de un proxy HTTPS.
+// Sin esto, Express nunca detecta la conexión como "segura" y la cookie
+// de sesión con secure:true jamás se guarda — causando que el login
+// parezca funcionar pero te regrese al login en cada request.
+app.set('trust proxy', 1);
+
 // ── MOTOR DE VISTAS EJS ───────────────────────────────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'frontend/views'));
