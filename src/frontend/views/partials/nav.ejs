@@ -107,13 +107,16 @@
       return;
     }
 
-    // Clic en un link del menú → cerrar el menú para navegar
+    // Clic en un link del menú → dejamos que el navegador navegue normal.
+    // NO tocamos el DOM de forma síncrona aquí: en varios navegadores móviles,
+    // cerrar el menú (quitar clases, cambiar overflow) en el mismo instante
+    // del clic puede "perder" la navegación porque el <a> deja de estar
+    // visible/clicable antes de que el navegador complete el evento.
+    // Como la página va a cambiar de todas formas, no hace falta limpiar nada.
     if (e.target.closest('#navLinks a')) {
-      links.classList.remove('nav-links-open');
-      overlay.classList.remove('nav-overlay-open');
-      burger.classList.remove('nav-burger-open');
-      burger.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
+      // No preventDefault, no removemos clases: dejamos que el <a> navegue.
+      return;
     }
   });
 </script>
