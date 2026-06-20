@@ -7,17 +7,38 @@
       <div class="nav-logo-circle" style="display:none;">Y</div>
     </div>
     <div class="nav-logo-text">
-      <span class="nav-logo-main">YAle</span>
+      <span class="nav-logo-main">LOTO PRO</span>
       <span class="nav-logo-sub">ASSA ABLOY</span>
     </div>
   </a>
 
-  <div class="nav-links">
-    <a href="/dashboard"  class="nav-link <%= title==='Inicio'    ? 'active':'' %>">Inicio</a>
+  <div class="nav-links" id="navLinks">
+    <a href="/dashboard"  class="nav-link <%= title==='Dashboard'    ? 'active':'' %>">Dashboard</a>
     <a href="/informes"   class="nav-link <%= title==='Mis Informes' ? 'active':'' %>">Informes</a>
     <a href="/clientes"   class="nav-link <%= title==='Clientes'     ? 'active':'' %>">Clientes</a>
     <a href="/productos"  class="nav-link <%= ['Catálogo Yale','Nuevo Producto','Editar Producto'].includes(title) ? 'active':'' %>">Catálogo</a>
+
+    <!-- En móvil, el usuario y logout viven dentro del mismo menú desplegable -->
+    <div class="nav-mobile-user">
+      <div class="nav-mobile-user-row">
+        <% if (user?.avatar_url) { %>
+          <img src="<%= user.avatar_url %>" alt="Avatar" class="nav-avatar">
+        <% } else { %>
+          <div class="nav-avatar-placeholder"><%= user?.nombre?.charAt(0).toUpperCase() || 'U' %></div>
+        <% } %>
+        <div class="nav-user-info">
+          <span class="nav-user-name"><%= user?.nombre || 'Usuario' %></span>
+          <span class="nav-user-zona"><%= user?.zona || user?.cargo || '' %></span>
+        </div>
+      </div>
+      <a href="/auth/logout" class="nav-link nav-mobile-logout">⏻ Cerrar sesión</a>
+    </div>
   </div>
+
+  <!-- Botón hamburguesa: solo visible en móvil -->
+  <button class="nav-burger" id="navBurger" aria-label="Abrir menú" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
 
   <div class="nav-user">
     <% if (user?.avatar_url) { %>
@@ -33,6 +54,9 @@
   </div>
 </nav>
 
+<!-- Fondo oscuro al abrir el menú móvil -->
+<div class="nav-overlay" id="navOverlay"></div>
+
 <!-- FLASH MESSAGES -->
 <% if (flash?.success) { %>
   <div class="flash flash-success"><%= flash.success %></div>
@@ -40,3 +64,35 @@
 <% if (flash?.error) { %>
   <div class="flash flash-error"><%= flash.error %></div>
 <% } %>
+
+<script>
+  // Menú hamburguesa: abrir/cerrar
+  (function() {
+    const burger  = document.getElementById('navBurger');
+    const links   = document.getElementById('navLinks');
+    const overlay = document.getElementById('navOverlay');
+    if (!burger) return;
+
+    function closeMenu() {
+      links.classList.remove('nav-links-open');
+      overlay.classList.remove('nav-overlay-open');
+      burger.classList.remove('nav-burger-open');
+      burger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+    function openMenu() {
+      links.classList.add('nav-links-open');
+      overlay.classList.add('nav-overlay-open');
+      burger.classList.add('nav-burger-open');
+      burger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    burger.addEventListener('click', () => {
+      links.classList.contains('nav-links-open') ? closeMenu() : openMenu();
+    });
+    overlay.addEventListener('click', closeMenu);
+    // Cerrar al hacer clic en un link
+    links.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+  })();
+</script>
