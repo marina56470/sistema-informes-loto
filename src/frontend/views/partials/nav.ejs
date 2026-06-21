@@ -35,8 +35,10 @@
     </div>
   </div>
 
-  <!-- Botón hamburguesa: solo visible en móvil -->
-  <button class="nav-burger" id="navBurger" aria-label="Abrir menú" aria-expanded="false">
+  <!-- Botón hamburguesa: solo visible en móvil. onclick directo, sin
+       intermediarios, es el método más confiable entre navegadores. -->
+  <button type="button" class="nav-burger" id="navBurger" aria-label="Abrir menú"
+          aria-expanded="false" onclick="window.lotoToggleMenu()">
     <span></span><span></span><span></span>
   </button>
 
@@ -55,7 +57,7 @@
 </nav>
 
 <!-- Fondo oscuro al abrir el menú móvil -->
-<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-overlay" id="navOverlay" onclick="window.lotoCloseMenu()"></div>
 
 <!-- FLASH MESSAGES -->
 <% if (flash?.success) { %>
@@ -66,57 +68,33 @@
 <% } %>
 
 <script>
-  // Menú hamburguesa: usamos delegación de eventos en document en vez de
-  // bindear directo a los elementos. Esto evita fallos si el script corre
-  // antes de que el navegador termine de pintar el DOM (común en móviles
-  // con conexión lenta), y también evita problemas si nav.ejs se reinserta
-  // dinámicamente en algún momento.
-  document.addEventListener('click', function(e) {
-    const burger = document.getElementById('navBurger');
-    const links  = document.getElementById('navLinks');
+  // Funciones globales simples — sin delegación de eventos, sin
+  // overflow:hidden en el body (que en iOS Safari puede bloquear
+  // los toques dentro de elementos position:fixed y "comerse" la
+  // navegación de los links). Cada link de #navLinks navega solo,
+  // de forma 100% nativa, sin que JS intervenga en su clic.
+  window.lotoToggleMenu = function() {
+    const links = document.getElementById('navLinks');
     const overlay = document.getElementById('navOverlay');
-    if (!burger || !links || !overlay) return;
-
-    // Clic en el botón hamburguesa (o en cualquiera de sus <span> internos)
-    if (e.target.closest('#navBurger')) {
-      e.preventDefault();
-      const isOpen = links.classList.contains('nav-links-open');
-      if (isOpen) {
-        links.classList.remove('nav-links-open');
-        overlay.classList.remove('nav-overlay-open');
-        burger.classList.remove('nav-burger-open');
-        burger.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      } else {
-        links.classList.add('nav-links-open');
-        overlay.classList.add('nav-overlay-open');
-        burger.classList.add('nav-burger-open');
-        burger.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden';
-      }
-      return;
+    const burger = document.getElementById('navBurger');
+    const isOpen = links.classList.contains('nav-links-open');
+    if (isOpen) {
+      window.lotoCloseMenu();
+    } else {
+      links.classList.add('nav-links-open');
+      overlay.classList.add('nav-overlay-open');
+      burger.classList.add('nav-burger-open');
+      burger.setAttribute('aria-expanded', 'true');
     }
+  };
 
-    // Clic en el fondo oscuro → cerrar
-    if (e.target.id === 'navOverlay') {
-      links.classList.remove('nav-links-open');
-      overlay.classList.remove('nav-overlay-open');
-      burger.classList.remove('nav-burger-open');
-      burger.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
-      return;
-    }
-
-    // Clic en un link del menú → dejamos que el navegador navegue normal.
-    // NO tocamos el DOM de forma síncrona aquí: en varios navegadores móviles,
-    // cerrar el menú (quitar clases, cambiar overflow) en el mismo instante
-    // del clic puede "perder" la navegación porque el <a> deja de estar
-    // visible/clicable antes de que el navegador complete el evento.
-    // Como la página va a cambiar de todas formas, no hace falta limpiar nada.
-    if (e.target.closest('#navLinks a')) {
-      document.body.style.overflow = '';
-      // No preventDefault, no removemos clases: dejamos que el <a> navegue.
-      return;
-    }
-  });
+  window.lotoCloseMenu = function() {
+    const links = document.getElementById('navLinks');
+    const overlay = document.getElementById('navOverlay');
+    const burger = document.getElementById('navBurger');
+    links.classList.remove('nav-links-open');
+    overlay.classList.remove('nav-overlay-open');
+    burger.classList.remove('nav-burger-open');
+    burger.setAttribute('aria-expanded', 'false');
+  };
 </script>
