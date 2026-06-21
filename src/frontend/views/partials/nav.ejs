@@ -56,9 +56,6 @@
   </div>
 </nav>
 
-<!-- Fondo oscuro al abrir el menú móvil -->
-<div class="nav-overlay" id="navOverlay" onclick="window.lotoCloseMenu()"></div>
-
 <!-- FLASH MESSAGES -->
 <% if (flash?.success) { %>
   <div class="flash flash-success"><%= flash.success %></div>
@@ -68,21 +65,23 @@
 <% } %>
 
 <script>
-  // Funciones globales simples — sin delegación de eventos, sin
-  // overflow:hidden en el body (que en iOS Safari puede bloquear
-  // los toques dentro de elementos position:fixed y "comerse" la
-  // navegación de los links). Cada link de #navLinks navega solo,
-  // de forma 100% nativa, sin que JS intervenga en su clic.
+  // IMPORTANTE: ya no usamos un <div> de overlay separado. Antes, ese div
+  // cubría toda la pantalla (position:fixed; inset:0) y, sin importar el
+  // z-index, en la práctica terminaba capturando los clics destinados a
+  // los links del menú — confirmado con DevTools, el clic caía en
+  // #navOverlay en vez de en el <a>. El fondo oscuro ahora es un
+  // pseudo-elemento ::before generado por CSS dentro del propio <nav>,
+  // que nunca puede "tapar" al menú porque es parte del mismo árbol y
+  // queda automáticamente detrás en el z-index.
   window.lotoToggleMenu = function() {
     const links = document.getElementById('navLinks');
-    const overlay = document.getElementById('navOverlay');
     const burger = document.getElementById('navBurger');
     const isOpen = links.classList.contains('nav-links-open');
     if (isOpen) {
       window.lotoCloseMenu();
     } else {
       links.classList.add('nav-links-open');
-      overlay.classList.add('nav-overlay-open');
+      document.body.classList.add('nav-menu-open');
       burger.classList.add('nav-burger-open');
       burger.setAttribute('aria-expanded', 'true');
     }
@@ -90,11 +89,22 @@
 
   window.lotoCloseMenu = function() {
     const links = document.getElementById('navLinks');
-    const overlay = document.getElementById('navOverlay');
     const burger = document.getElementById('navBurger');
     links.classList.remove('nav-links-open');
-    overlay.classList.remove('nav-overlay-open');
+    document.body.classList.remove('nav-menu-open');
     burger.classList.remove('nav-burger-open');
     burger.setAttribute('aria-expanded', 'false');
   };
+
+  // Cerrar al tocar/clickear fuera del menú: revisamos en la fase de
+  // captura (capture:true) si el clic NO fue dentro de #navLinks ni en
+  // el botón hamburguesa. Esto reemplaza al overlay como mecanismo de
+  // "cerrar tocando afuera", sin necesitar ningún elemento adicional
+  // que pueda interponerse.
+  document.addEventListener('click', function(e) {
+    const links = document.getElementById('navLinks');
+    if (!links || !links.classList.contains('nav-links-open')) return;
+    if (e.target.closest('#navLinks') || e.target.closest('#navBurger')) return;
+    window.lotoCloseMenu();
+  }, true);
 </script>
