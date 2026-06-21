@@ -13,28 +13,28 @@
   <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon">📄</div>
+      <div class="stat-icon"></div>
       <div class="stat-info">
         <div class="stat-number"><%= stats.total || 0 %></div>
         <div class="stat-label">Total Informes</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">✏️</div>
+      <div class="stat-icon"></div>
       <div class="stat-info">
         <div class="stat-number"><%= stats.borradores || 0 %></div>
         <div class="stat-label">En Borrador</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">✅</div>
+      <div class="stat-icon"></div>
       <div class="stat-info">
         <div class="stat-number"><%= stats.finalizados || 0 %></div>
         <div class="stat-label">Finalizados</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">📤</div>
+      <div class="stat-icon"></div>
       <div class="stat-info">
         <div class="stat-number"><%= stats.enviados || 0 %></div>
         <div class="stat-label">Enviados</div>
@@ -67,8 +67,8 @@
             <div class="ic-hallazgos"><%= inf.total_hallazgos %> punto<%= inf.total_hallazgos != 1 ? 's' : '' %> de bloqueo</div>
           </div>
           <div class="ic-footer">
-            <a href="/informes/<%= inf.id %>/editar"  class="btn btn-sm btn-outline">✏️ Editar</a>
-            <a href="/informes/<%= inf.id %>/preview" class="btn btn-sm btn-primary">👁 Ver</a>
+            <a href="/informes/<%= inf.id %>/editar"  class="btn btn-sm btn-outline"> Editar</a>
+            <a href="/informes/<%= inf.id %>/preview" class="btn btn-sm btn-primary"> Ver</a>
           </div>
         </div>
       <% }) %>

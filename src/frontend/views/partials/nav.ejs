@@ -18,7 +18,6 @@
     <a href="/clientes"   class="nav-link <%= title==='Clientes'     ? 'active':'' %>">Clientes</a>
     <a href="/productos"  class="nav-link <%= ['Catálogo Yale','Nuevo Producto','Editar Producto'].includes(title) ? 'active':'' %>">Catálogo</a>
 
-    <!-- En móvil, el usuario y logout viven dentro del mismo menú desplegable -->
     <div class="nav-mobile-user">
       <div class="nav-mobile-user-row">
         <% if (user?.avatar_url) { %>
@@ -35,8 +34,6 @@
     </div>
   </div>
 
-  <!-- Botón hamburguesa: solo visible en móvil. onclick directo, sin
-       intermediarios, es el método más confiable entre navegadores. -->
   <button type="button" class="nav-burger" id="navBurger" aria-label="Abrir menú"
           aria-expanded="false" onclick="window.lotoToggleMenu()">
     <span></span><span></span><span></span>
@@ -65,14 +62,7 @@
 <% } %>
 
 <script>
-  // IMPORTANTE: ya no usamos un <div> de overlay separado. Antes, ese div
-  // cubría toda la pantalla (position:fixed; inset:0) y, sin importar el
-  // z-index, en la práctica terminaba capturando los clics destinados a
-  // los links del menú — confirmado con DevTools, el clic caía en
-  // #navOverlay en vez de en el <a>. El fondo oscuro ahora es un
-  // pseudo-elemento ::before generado por CSS dentro del propio <nav>,
-  // que nunca puede "tapar" al menú porque es parte del mismo árbol y
-  // queda automáticamente detrás en el z-index.
+  
   window.lotoToggleMenu = function() {
     const links = document.getElementById('navLinks');
     const burger = document.getElementById('navBurger');
@@ -96,11 +86,7 @@
     burger.setAttribute('aria-expanded', 'false');
   };
 
-  // Cerrar al tocar/clickear fuera del menú: revisamos en la fase de
-  // captura (capture:true) si el clic NO fue dentro de #navLinks ni en
-  // el botón hamburguesa. Esto reemplaza al overlay como mecanismo de
-  // "cerrar tocando afuera", sin necesitar ningún elemento adicional
-  // que pueda interponerse.
+  
   document.addEventListener('click', function(e) {
     const links = document.getElementById('navLinks');
     if (!links || !links.classList.contains('nav-links-open')) return;

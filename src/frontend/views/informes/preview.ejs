@@ -26,10 +26,10 @@
       <p class="page-sub"><%= informe.empresa || 'Sin cliente' %></p>
     </div>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-      <a href="/informes/<%= informe.id %>/editar" class="btn btn-outline">✏️ Editar</a>
+      <a href="/informes/<%= informe.id %>/editar" class="btn btn-outline"> Editar</a>
       <% if (informe.estado === 'borrador') { %>
         <form action="/informes/<%= informe.id %>/finalizar" method="POST" style="display:inline">
-          <button type="submit" class="btn btn-outline">✅ Finalizar</button>
+          <button type="submit" class="btn btn-outline">Finalizar</button>
         </form>
       <% } %>
       <button onclick="window.print()" class="btn btn-outline">🖨 Imprimir / PDF</button>
@@ -51,7 +51,7 @@
       </div>
       <div class="report-header-company">
         <h2>INFORME DE CONTROL DE ENERGÍAS PELIGROSAS</h2>
-        <p>Bloqueo y Etiquetado — Yale LOTO Solutions</p>
+        <p>Bloqueo y Etiquetado — Yale</p>
       </div>
     </div>
 
@@ -88,7 +88,7 @@
             <th>HALLAZGOS</th>
             <th>ENERGÍAS PELIGROSAS</th>
             <th>REGISTRO FOTOGRÁFICO</th>
-            <th>RECOMENDACIONES (SKU Yale)</th>
+            <th>RECOMENDACIONES</th>
           </tr>
         </thead>
         <tbody>
@@ -143,7 +143,7 @@
 
     <!-- Notas técnicas -->
     <div class="report-notes">
-      <h3>📋 NOTAS TÉCNICAS ADICIONALES</h3>
+      <h3>NOTAS TÉCNICAS ADICIONALES</h3>
       <ol>
         <li>Los dispositivos sugeridos corresponden a la recomendación de ASSA ABLOY COLOMBIA. La responsabilidad final de selección e implementación es de <strong><%= informe.empresa || 'la empresa cliente' %></strong>.</li>
         <li>Todos los dispositivos deberán ser asegurados con candados. Para bloqueo eléctrico: candados nylon dieléctricos; para bloqueo mecánico: candados con gancho metálico o nylon.</li>
@@ -158,7 +158,7 @@
     <!-- Nota comercial -->
     <% if (informe.notas_comerciales) { %>
     <div class="report-notes" style="border-top:1px solid #e5e5e5;">
-      <h3 style="color:#333;">📦 NOTA COMERCIAL</h3>
+      <h3 style="color:#333;">NOTA COMERCIAL</h3>
       <p style="font-size:0.78rem;color:#333;"><%= informe.notas_comerciales %></p>
     </div>
     <% } %>
@@ -213,7 +213,7 @@
 
     <!-- Info del PDF -->
     <div class="send-pdf-info">
-      <div class="send-pdf-icon">📄</div>
+      <div class="send-pdf-icon"></div>
       <div>
         <div class="send-pdf-name">Informe_LOTO_<%= (informe.empresa||'Cliente').replace(/\s+/g,'_') %>_<%= new Date().toISOString().split('T')[0] %>.pdf</div>
         <div class="send-pdf-sub">Se generará y adjuntará automáticamente al correo</div>
